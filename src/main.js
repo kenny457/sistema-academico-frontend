@@ -1,5 +1,5 @@
 // Configuración de la API - cambia automáticamente según el entorno
-const API_URL = import.meta.env.VITE_API_URL || "https://sistema-academico-api-vez9.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL || "https://sistema-academico-api-0hw0.onrender.com";
 
 // --- ESTADO GLOBAL ---
 let usuariosLista = [];
