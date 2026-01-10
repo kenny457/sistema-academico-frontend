@@ -1,5 +1,5 @@
-// URL de la API en Render
-const API_URL = "https://sistema-academico-api-vez9.onrender.com";
+// Configuración de la API - cambia automáticamente según el entorno
+const API_URL = import.meta.env.VITE_API_URL || "https://sistema-academico-api-vez9.onrender.com";
 
 // --- ESTADO GLOBAL ---
 let usuariosLista = [];
@@ -8,25 +8,28 @@ let estudiantesLista = [];
 let notasLista = [];
 let usuarioLogueado = null;
 
-// --- INSTANCIAS DE MODALES BOOTSTRAP (se inicializan después de que el DOM cargue)---
-let modalUsuarioBS;
-let modalMateriaBS;
-let modalEstudianteBS;
-let modalNotaBS;
-let modalPerfilBS;
+// --- INSTANCIAS DE MODALES BOOTSTRAP ---
+const modalUsuarioBS = new bootstrap.Modal(document.getElementById('modalUsuario'));
+const modalMateriaBS = new bootstrap.Modal(document.getElementById('modalMateria'));
+const modalEstudianteBS = new bootstrap.Modal(document.getElementById('modalEstudiante'));
+const modalNotaBS = new bootstrap.Modal(document.getElementById('modalNota'));
+const modalPerfilBS = new bootstrap.Modal(document.getElementById('modalPerfil'));
 
 // --- TEMA CLARO/OSCURO ---
 let temaOscuro = localStorage.getItem("temaOscuro") === "true";
 
 function aplicarTema() {
   const body = document.body;
+  const temaTexto = document.getElementById("temaTexto");
   const btnConfig = document.getElementById("btnConfig");
   
   if (temaOscuro) {
     body.classList.add("tema-oscuro");
+    if (temaTexto) temaTexto.textContent = "Tema Claro";
     if (btnConfig) btnConfig.innerHTML = '<i class="bi bi-sun-fill me-2"></i><span id="temaTexto">Tema Claro</span>';
   } else {
     body.classList.remove("tema-oscuro");
+    if (temaTexto) temaTexto.textContent = "Tema Oscuro";
     if (btnConfig) btnConfig.innerHTML = '<i class="bi bi-moon-stars-fill me-2"></i><span id="temaTexto">Tema Oscuro</span>';
   }
 }
@@ -37,90 +40,16 @@ function toggleTema() {
   aplicarTema();
 }
 
-// INICIALIZACIÓN AL CARGAR EL DOM
+// Aplicar tema al cargar
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM cargado, inicializando...");
-  
-  // Inicializar modales de Bootstrap
-  modalUsuarioBS = new bootstrap.Modal(document.getElementById('modalUsuario'));
-  modalMateriaBS = new bootstrap.Modal(document.getElementById('modalMateria'));
-  modalEstudianteBS = new bootstrap.Modal(document.getElementById('modalEstudiante'));
-  modalNotaBS = new bootstrap.Modal(document.getElementById('modalNota'));
-  modalPerfilBS = new bootstrap.Modal(document.getElementById('modalPerfil'));
-  
-  // Aplicar tema guardado
   aplicarTema();
-  
-  // Verificar sesión guardada
   const guardado = localStorage.getItem("usuarios");
-  if (guardado) {
-    iniciarSesion(JSON.parse(guardado));
-  }
-  
-  // Event listener para el formulario de login
-  const formLogin = document.getElementById("formLogin");
-  if (formLogin) {
-    formLogin.addEventListener("submit", handleLogin);
-  }
-  
-  // Event listener para formulario de usuario
-  const formUsuario = document.getElementById("formUsuario");
-  if (formUsuario) {
-    formUsuario.addEventListener("submit", handleGuardarUsuario);
-  }
-  
-  // Event listener para formulario de materia
-  const formMateria = document.getElementById("formMateria");
-  if (formMateria) {
-    formMateria.addEventListener("submit", handleGuardarMateria);
-  }
-  
-  // Event listener para formulario de estudiante
-  const formEstudiante = document.getElementById("formEstudiante");
-  if (formEstudiante) {
-    formEstudiante.addEventListener("submit", handleGuardarEstudiante);
-  }
-  
-  // Event listener para formulario de nota
-  const formNota = document.getElementById("formNota");
-  if (formNota) {
-    formNota.addEventListener("submit", handleGuardarNota);
-  }
-  
-  // Event listeners para buscadores
-  setupBuscadores();
-  
-  // Event listeners para botones de acción
-  const btnSalir = document.getElementById("btnSalir");
-  if (btnSalir) {
-    btnSalir.onclick = () => { 
-      localStorage.clear(); 
-      location.reload(); 
-    };
-  }
-  
-  const btnPerfil = document.getElementById("btnPerfil");
-  if (btnPerfil) {
-    btnPerfil.onclick = () => {
-      document.getElementById("perfilNombre").textContent = usuarioLogueado.nombre;
-      document.getElementById("perfilCedula").textContent = usuarioLogueado.cedula;
-      modalPerfilBS.show();
-    };
-  }
-  
-  const btnConfig = document.getElementById("btnConfig");
-  if (btnConfig) {
-    btnConfig.onclick = toggleTema;
-  }
-  
-  console.log("Inicialización completa");
+  if (guardado) iniciarSesion(JSON.parse(guardado));
 });
 
 // --- AUTENTICACIÓN ---
-async function handleLogin(e) {
+document.getElementById("formLogin").addEventListener("submit", async (e) => {
   e.preventDefault();
-  console.log("Intentando login...");
-  
   const cedula = document.getElementById("loginCedula").value;
   const clave = document.getElementById("loginClave").value;
 
@@ -131,9 +60,6 @@ async function handleLogin(e) {
       body: JSON.stringify({ cedula, clave })
     });
     const data = await res.json();
-    
-    console.log("Respuesta del servidor:", data);
-    
     if (res.ok) {
       localStorage.setItem("usuarios", JSON.stringify(data.usuario));
       iniciarSesion(data.usuario);
@@ -144,10 +70,9 @@ async function handleLogin(e) {
     console.error("Error en login:", error);
     document.getElementById("loginError").textContent = "Error de conexión con el servidor";
   }
-}
+});
 
 function iniciarSesion(usuario) {
-  console.log("Iniciando sesión para:", usuario.nombre);
   usuarioLogueado = usuario;
   document.getElementById("vistaLogin").classList.add("d-none");
   document.getElementById("vistaDashboard").classList.remove("d-none");
@@ -223,7 +148,7 @@ window.prepararEditar = async (id) => {
   }
 };
 
-async function handleGuardarUsuario(e) {
+document.getElementById("formUsuario").addEventListener("submit", async (e) => {
   e.preventDefault();
   
   const id = document.getElementById("userId").value;
@@ -254,7 +179,7 @@ async function handleGuardarUsuario(e) {
     console.error("Error guardando usuario:", error);
     alert("Error de conexión con el servidor");
   }
-}
+});
 
 window.eliminarUsuario = async (id) => {
   if (!confirm("¿Está seguro de eliminar este usuario?")) return;
@@ -315,7 +240,7 @@ window.prepararEditarMateria = async (id) => {
   }
 };
 
-async function handleGuardarMateria(e) {
+document.getElementById("formMateria").addEventListener("submit", async (e) => {
   e.preventDefault();
   
   const id = document.getElementById("materiaId").value;
@@ -344,7 +269,7 @@ async function handleGuardarMateria(e) {
     console.error("Error guardando materia:", error);
     alert("Error de conexión con el servidor");
   }
-}
+});
 
 window.eliminarMateria = async (id) => {
   if (!confirm("¿Está seguro de eliminar esta materia?")) return;
@@ -406,7 +331,7 @@ window.prepararEditarEstudiante = async (id) => {
   }
 };
 
-async function handleGuardarEstudiante(e) {
+document.getElementById("formEstudiante").addEventListener("submit", async (e) => {
   e.preventDefault();
   
   const id = document.getElementById("estudianteId").value;
@@ -437,7 +362,7 @@ async function handleGuardarEstudiante(e) {
     console.error("Error guardando estudiante:", error);
     alert("Error de conexión con el servidor");
   }
-}
+});
 
 window.eliminarEstudiante = async (id) => {
   if (!confirm("¿Está seguro de eliminar este estudiante?")) return;
@@ -500,7 +425,7 @@ window.prepararCrearNota = async () => {
   }
 };
 
-async function handleGuardarNota(e) {
+document.getElementById("formNota").addEventListener("submit", async (e) => {
   e.preventDefault();
   
   const datos = {
@@ -527,7 +452,7 @@ async function handleGuardarNota(e) {
     console.error("Error guardando nota:", error);
     alert("Error de conexión con el servidor");
   }
-}
+});
 
 window.eliminarNota = async (id) => {
   if (!confirm("¿Está seguro de eliminar esta nota?")) return;
@@ -541,44 +466,46 @@ window.eliminarNota = async (id) => {
 };
 
 // --- BUSCADORES ---
-function setupBuscadores() {
-  const inputBuscar = document.getElementById("inputBuscar");
-  if (inputBuscar) {
-    inputBuscar.addEventListener("input", (e) => {
-      const term = e.target.value.toLowerCase();
-      renderizarUsuarios(usuariosLista.filter(u => 
-        u.nombre.toLowerCase().includes(term) || u.cedula.includes(term)
-      ));
-    });
-  }
+document.getElementById("inputBuscar")?.addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  renderizarUsuarios(usuariosLista.filter(u => 
+    u.nombre.toLowerCase().includes(term) || u.cedula.includes(term)
+  ));
+});
 
-  const inputBuscarMateria = document.getElementById("inputBuscarMateria");
-  if (inputBuscarMateria) {
-    inputBuscarMateria.addEventListener("input", (e) => {
-      const term = e.target.value.toLowerCase();
-      renderizarMaterias(materiasLista.filter(m => 
-        m.nombre_materia.toLowerCase().includes(term)
-      ));
-    });
-  }
+document.getElementById("inputBuscarMateria")?.addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  renderizarMaterias(materiasLista.filter(m => 
+    m.nombre_materia.toLowerCase().includes(term)
+  ));
+});
 
-  const inputBuscarEstudiante = document.getElementById("inputBuscarEstudiante");
-  if (inputBuscarEstudiante) {
-    inputBuscarEstudiante.addEventListener("input", (e) => {
-      const term = e.target.value.toLowerCase();
-      renderizarEstudiantes(estudiantesLista.filter(est => 
-        est.nombre.toLowerCase().includes(term) || est.cedula.includes(term)
-      ));
-    });
-  }
+document.getElementById("inputBuscarEstudiante")?.addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  renderizarEstudiantes(estudiantesLista.filter(est => 
+    est.nombre.toLowerCase().includes(term) || est.cedula.includes(term)
+  ));
+});
 
-  const inputBuscarNota = document.getElementById("inputBuscarNota");
-  if (inputBuscarNota) {
-    inputBuscarNota.addEventListener("input", (e) => {
-      const term = e.target.value.toLowerCase();
-      renderizarNotas(notasLista.filter(n => 
-        n.nombre_estudiante.toLowerCase().includes(term)
-      ));
-    });
-  }
-}
+document.getElementById("inputBuscarNota")?.addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  renderizarNotas(notasLista.filter(n => 
+    n.nombre_estudiante.toLowerCase().includes(term)
+  ));
+});
+
+// --- ACCIONES DE CIERRE ---
+document.getElementById("btnSalir").onclick = () => { 
+  localStorage.clear(); 
+  location.reload(); 
+};
+
+document.getElementById("btnPerfil").onclick = () => {
+  document.getElementById("perfilNombre").textContent = usuarioLogueado.nombre;
+  document.getElementById("perfilCedula").textContent = usuarioLogueado.cedula;
+  modalPerfilBS.show();
+};
+
+document.getElementById("btnConfig").onclick = () => {
+  toggleTema();
+};
