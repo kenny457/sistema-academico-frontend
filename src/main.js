@@ -1,5 +1,5 @@
-// Configuración de la API - cambia automáticamente según el entorno
-const API_URL = import.meta.env.VITE_API_URL || "https://sistema-academico-api-0hw0.onrender.com";
+// URL de la API en Render
+const API_URL = "https://sistema-academico-api-0hw0.onrender.com";
 
 // --- ESTADO GLOBAL ---
 let usuariosLista = [];
@@ -20,16 +20,13 @@ let temaOscuro = localStorage.getItem("temaOscuro") === "true";
 
 function aplicarTema() {
   const body = document.body;
-  const temaTexto = document.getElementById("temaTexto");
   const btnConfig = document.getElementById("btnConfig");
   
   if (temaOscuro) {
     body.classList.add("tema-oscuro");
-    if (temaTexto) temaTexto.textContent = "Tema Claro";
     if (btnConfig) btnConfig.innerHTML = '<i class="bi bi-sun-fill me-2"></i><span id="temaTexto">Tema Claro</span>';
   } else {
     body.classList.remove("tema-oscuro");
-    if (temaTexto) temaTexto.textContent = "Tema Oscuro";
     if (btnConfig) btnConfig.innerHTML = '<i class="bi bi-moon-stars-fill me-2"></i><span id="temaTexto">Tema Oscuro</span>';
   }
 }
@@ -40,7 +37,6 @@ function toggleTema() {
   aplicarTema();
 }
 
-// Aplicar tema al cargar
 document.addEventListener("DOMContentLoaded", () => {
   aplicarTema();
   const guardado = localStorage.getItem("usuarios");
@@ -506,6 +502,7 @@ document.getElementById("btnPerfil").onclick = () => {
   modalPerfilBS.show();
 };
 
+// Botón de Configuración - Cambio de tema
 document.getElementById("btnConfig").onclick = () => {
   toggleTema();
 };
