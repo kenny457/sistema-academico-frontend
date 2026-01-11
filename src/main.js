@@ -1,5 +1,6 @@
-// URL de la API en Render
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// IMPORTANTE: Reemplaza esta URL con la URL REAL de tu backend en Render
+// Debe verse algo como: https://sistema-academico-api.onrender.com
+const API_URL = "https://sistema-academico-api-8p4j.onrender.com";
 
 // --- ESTADO GLOBAL ---
 let usuariosLista = [];
@@ -15,30 +16,7 @@ const modalEstudianteBS = new bootstrap.Modal(document.getElementById('modalEstu
 const modalNotaBS = new bootstrap.Modal(document.getElementById('modalNota'));
 const modalPerfilBS = new bootstrap.Modal(document.getElementById('modalPerfil'));
 
-// --- TEMA CLARO/OSCURO ---
-let temaOscuro = localStorage.getItem("temaOscuro") === "true";
-
-function aplicarTema() {
-  const body = document.body;
-  const btnConfig = document.getElementById("btnConfig");
-  
-  if (temaOscuro) {
-    body.classList.add("tema-oscuro");
-    if (btnConfig) btnConfig.innerHTML = '<i class="bi bi-sun-fill me-2"></i><span id="temaTexto">Tema Claro</span>';
-  } else {
-    body.classList.remove("tema-oscuro");
-    if (btnConfig) btnConfig.innerHTML = '<i class="bi bi-moon-stars-fill me-2"></i><span id="temaTexto">Tema Oscuro</span>';
-  }
-}
-
-function toggleTema() {
-  temaOscuro = !temaOscuro;
-  localStorage.setItem("temaOscuro", temaOscuro);
-  aplicarTema();
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  aplicarTema();
   const guardado = localStorage.getItem("usuarios");
   if (guardado) iniciarSesion(JSON.parse(guardado));
 });
@@ -50,12 +28,18 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
   const clave = document.getElementById("loginClave").value;
 
   try {
+    console.log("Intentando login con:", { cedula, API_URL });
+    
     const res = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cedula, clave })
     });
+    
+    console.log("Respuesta del servidor:", res.status);
     const data = await res.json();
+    console.log("Datos recibidos:", data);
+    
     if (res.ok) {
       localStorage.setItem("usuarios", JSON.stringify(data.usuario));
       iniciarSesion(data.usuario);
@@ -64,7 +48,7 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
     }
   } catch (error) {
     console.error("Error en login:", error);
-    document.getElementById("loginError").textContent = "Error de conexión con el servidor";
+    document.getElementById("loginError").textContent = "Error de conexión con el servidor. Verifica la URL del API.";
   }
 });
 
@@ -502,7 +486,9 @@ document.getElementById("btnPerfil").onclick = () => {
   modalPerfilBS.show();
 };
 
-// Botón de Configuración - Cambio de tema
-document.getElementById("btnConfig").onclick = () => {
-  toggleTema();
-};
+// Botón de Configuración
+document.getElementById("btnConfig").addEventListener("click", () => {
+  document.body.classList.toggle("bg-dark");
+  document.body.classList.toggle("text-white");
+  alert("Cambiando tema visual...");
+});
