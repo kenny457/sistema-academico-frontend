@@ -1,5 +1,5 @@
 // URL de la API en Render
-const API_URL = "https://sistema-academico-api-0hw0.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // --- ESTADO GLOBAL ---
 let usuariosLista = [];
