@@ -1,5 +1,3 @@
-// IMPORTANTE: Reemplaza esta URL con la URL REAL de tu backend en Render
-// Debe verse algo como: https://sistema-academico-api.onrender.com
 const API_URL = "https://sistema-academico-api-8p4j.onrender.com";
 
 // --- ESTADO GLOBAL ---
